@@ -69,7 +69,7 @@ def ldaTest(means,covmat,Xtest,ytest):
     ydist = np.zeros((Xtest.shape[0],means.shape[1]))
     for i in range(means.shape[1]):
         ydist[:,i] = np.exp(-0.5*np.sum((Xtest - means[:,i])* 
-        np.dot(invcovmat, (Xtest - means[:,i]).T).T,1)/(np.sqrt(np.pi*2)*(covmatdet**2)))
+        np.dot(invcovmat, (Xtest - means[:,i]).T).T,1))/(np.sqrt(np.pi*2)*(covmatdet**2))
     ylabel = np.argmax(ydist,1)
     ylabel = ylabel + 1
     ytest = ytest.reshape(ytest.size)
@@ -91,12 +91,12 @@ def qdaTest(means,covmats,Xtest,ytest):
         invcovmat = linalg.inv(covmats[i])
         covmatdet = linalg.det(covmats[i])
         ydist[:,i] = np.exp(-0.5*np.sum((Xtest - means[:,i])* 
-        np.dot(invcovmat, (Xtest - means[:,i]).T).T,1)/(np.sqrt(np.pi*2)*(covmatdet**2)))
+        np.dot(invcovmat, (Xtest - means[:,i]).T).T,1))/(np.sqrt(np.pi*2)*(covmatdet**2))
     ylabel = np.argmax(ydist,1)
     ylabel = ylabel + 1
     ytest = ytest.reshape(ytest.size)
     acc = 100*np.mean(ylabel == ytest)
-    return acc, ylabel    
+    return acc, ylabel   
     #return acc
 
 def plot_data(data0, label0, title, subtitle, *args):
@@ -109,6 +109,7 @@ def plot_data(data0, label0, title, subtitle, *args):
         means, covmats = args
     elif (len(args) == 4):
         means, covmats, traindata, trainlabel = args
+        trainlabel = trainlabel.reshape(trainlabel.size)
     for i in range(1,6):
         cl = next(colors)
         plt.scatter(data0[(label0==i).reshape((label0==i).size),0],
@@ -126,8 +127,8 @@ def plot_data(data0, label0, title, subtitle, *args):
             #Add mean points
             plt.scatter(means[0,i-1], means[1,i-1],c='black',s=30);
             if (len(args) == 4):
-                plt.scatter(traindata[(trainlabel==i).reshape((trainlabel==i).size),0],
-                traindata[(trainlabel==i).reshape((trainlabel==i).size),1],color=cl,
+                plt.scatter(traindata[trainlabel==i,0],
+                traindata[trainlabel==i,1],color=cl,
                 edgecolor='black')
     fig.suptitle(title)
     ax.set_title(subtitle)
@@ -171,8 +172,8 @@ plot_data(grid,gridlabel,'QDA Accuracy: ' + str(acc) +'%',
 data0,label0)
 
 # Plot sample training data with QDA data
-#plot_data(data0,label0,'(QDA) Sample data 1 with class mean and covariances(1 SD)',
-#qda_means,qda_covmats)
+# plot_data(data0,label0,'(QDA) Sample data 1 with class mean and covariances(1 SD)',
+# qda_means,qda_covmats)
 
 # Load diabetes data
 dtdata = pickle.load(open('diabetes.pickle','rb'))
