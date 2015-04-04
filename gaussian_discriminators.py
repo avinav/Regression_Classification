@@ -89,7 +89,7 @@ def qdaTest(means,covmats,Xtest,ytest):
     ydist = np.zeros((Xtest.shape[0],means.shape[1]))
     for i in range(means.shape[1]):
         invcovmat = linalg.inv(covmats[i])
-        covmatdet = linalg.det(covmat[i])
+        covmatdet = linalg.det(covmats[i])
         ydist[:,i] = np.exp(-0.5*np.sum((Xtest - means[:,i])* 
         np.dot(invcovmat, (Xtest - means[:,i]).T).T,1)/(np.sqrt(np.pi*2)*(covmatdet**2)))
     ylabel = np.argmax(ydist,1)
@@ -99,20 +99,23 @@ def qdaTest(means,covmats,Xtest,ytest):
     return acc, ylabel    
     #return acc
 
-def plot_data(data0, label0, title, *args):
+def plot_data(data0, label0, title, subtitle, *args):
     
     colors = iter(cm.rainbow(np.linspace(0,1,5)))
     plt.clf()
     fig = plt.figure()
-
+    ax = plt.gca()
+    if (len(args) == 2):
+        means, covmats = args
+    elif (len(args) == 4):
+        means, covmats, traindata, trainlabel = args
     for i in range(1,6):
+        cl = next(colors)
         plt.scatter(data0[(label0==i).reshape((label0==i).size),0],
-        data0[(label0==i).reshape((label0==i).size),1],color=next(colors))
+        data0[(label0==i).reshape((label0==i).size),1],color=cl)
         # Draw ellipse with 1 standard deviation
-        if (len(args) == 2):
-            ax = plt.gca()
+        if (len(args) >= 2):
             # Compute eigen vectors and value for covmat to plot an ellipse
-            means, covmats = args
             lambda_, v = np.linalg.eig(covmats[i-1])
             lambda_ = np.sqrt(lambda_)
             ell = Ellipse(xy=(means[0,i-1], means[1,i-1]),
@@ -122,7 +125,12 @@ def plot_data(data0, label0, title, *args):
             ax.add_artist(ell)
             #Add mean points
             plt.scatter(means[0,i-1], means[1,i-1],c='black',s=30);
+            if (len(args) == 4):
+                plt.scatter(traindata[(trainlabel==i).reshape((trainlabel==i).size),0],
+                traindata[(trainlabel==i).reshape((trainlabel==i).size),1],color=cl,
+                edgecolor='black')
     fig.suptitle(title)
+    ax.set_title(subtitle)
     fig.show()
     return
             
@@ -136,25 +144,33 @@ data = pickle.load(open("sample.pickle","rb"))
 
 # LDA Learn means and covariance
 means, covmat = ldaLearn(data0,label0)
-#covmat[0,1] = 0
-#covmat[1,0] = 0
 acc, ylabel = ldaTest(means,covmat,test0,label1)
-print acc
+print ('LDA Accuracy: ' + str(acc) + '%')
 # Create meshgrid
 xx, yy = np.meshgrid(np.linspace(0,16,100), np.linspace(0,16,100))
 grid = np.vstack((xx.reshape(xx.size),yy.reshape(yy.size))).T
-acctemp, gridlabel = ldaTest(means,covmat, grid, label1)
-plot_data(grid,gridlabel,'LDA Accuracy: ' + str(acc) +'%', means,[covmat]*means.shape[1])
 
-# Plot sample data with LDA data
+acctemp, gridlabel = ldaTest(means,covmat, grid, label1)
+plot_data(grid,gridlabel,'LDA Accuracy: ' + str(acc) +'%', 
+'black dots/solid-dots/ellipse -> training data points/mean/covariance', means,[covmat]*means.shape[1],
+data0,label0)
+
+# Plot sample training data with LDA data
 #plot_data(data0,label0,'(LDA) Sample data 1 with class mean and common covariance(1 SD)',
 #means,[covmat]*means.shape[1])
 #plot_data(data1,label1,'Sample data 2')        
 
 # QDA Learn mean and covariances
 qda_means, qda_covmats = qdaLearn(data0, label0)
+acc, ylabel = qdaTest(qda_means,qda_covmats,test0,label1)
+print ('QDA Accuracy: ' + str(acc) + '%')
 
-# Plot sample data with QDA data
+acctemp, gridlabel = qdaTest(qda_means,qda_covmats, grid, label1)
+plot_data(grid,gridlabel,'QDA Accuracy: ' + str(acc) +'%',
+'black dots/solid-dots/ellipse -> training data points/mean/covariance', qda_means,qda_covmats,
+data0,label0)
+
+# Plot sample training data with QDA data
 #plot_data(data0,label0,'(QDA) Sample data 1 with class mean and covariances(1 SD)',
 #qda_means,qda_covmats)
 
