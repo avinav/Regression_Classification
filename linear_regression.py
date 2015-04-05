@@ -28,7 +28,7 @@ def testOLERegression(w,Xtest,ytest):
     # Output:
     # rmse
     # IMPLEMENT THIS METHOD
-    return np.sqrt(np.mean(np.square(ytest - np.dot(Xtest, w))))
+    return np.sqrt(np.sum(np.square(ytest - np.dot(Xtest, w))))/Xtest.shape[0]
 
 
 #--------------------Script starts here-------------------------

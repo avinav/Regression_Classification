@@ -131,7 +131,7 @@ def plot_data(data0, label0, title, subtitle, *args):
                 traindata[trainlabel==i,1],color=cl,
                 edgecolor='black')
     fig.suptitle(title)
-    ax.set_title(subtitle)
+    ax.set_title(subtitle,fontsize='10')
     fig.show()
     return
             
@@ -145,6 +145,12 @@ data = pickle.load(open("sample.pickle","rb"))
 
 # LDA Learn means and covariance
 means, covmat = ldaLearn(data0,label0)
+#Plot sample training data with LDA data
+plot_data(data0,label0,'Sample data with class mean and common covariance(1 SD)','',
+means,[covmat]*means.shape[1])
+
+
+
 acc, ylabel = ldaTest(means,covmat,test0,label1)
 print ('LDA Accuracy: ' + str(acc) + '%')
 # Create meshgrid
@@ -156,10 +162,7 @@ plot_data(grid,gridlabel,'LDA Accuracy: ' + str(acc) +'%',
 'black dots/solid-dots/ellipse -> training data points/mean/covariance', means,[covmat]*means.shape[1],
 data0,label0)
 
-# Plot sample training data with LDA data
-#plot_data(data0,label0,'(LDA) Sample data 1 with class mean and common covariance(1 SD)',
-#means,[covmat]*means.shape[1])
-#plot_data(data1,label1,'Sample data 2')        
+
 
 # QDA Learn mean and covariances
 qda_means, qda_covmats = qdaLearn(data0, label0)
@@ -174,22 +177,4 @@ data0,label0)
 # Plot sample training data with QDA data
 # plot_data(data0,label0,'(QDA) Sample data 1 with class mean and covariances(1 SD)',
 # qda_means,qda_covmats)
-
-# Load diabetes data
-dtdata = pickle.load(open('diabetes.pickle','rb'))
-[x_dt_train, y_dt_train, x_dt_test, y_dt_test] = dtdata
-
-# Low rank approximation of diabetes train data
-U, s, Vh = linalg.svd(x_dt_train.T)
-temps = np.copy(s)
-s [2:] = 0
-sk = linalg.diagsvd(s, U.shape[1], Vh.shape[0])
-dt0_app = np.dot(U, np.dot(sk, Vh))
-dt0_app = dt0_app[:,:2]
-
-#colors = [cm.rainbow(np.linspace(0,1,np.unique(y_dt_train).size))]
-#fig = plt.figure()
-#plt.scatter(dt0_app[:,0],dt0_app[:,1])
-#fig.suptitle('Diabetes data in 2-D with low rank approximation')
-#fig.show()
 
